@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  core:
+    build:
+      context: ./core
+      dockerfile: Dockerfile.core
+    ports:
+      - "8080:8080"
+    networks:
+      - vieteduchain-network
+
+  api:
+    build:
+      context: ./api
+      dockerfile: Dockerfile.api
+    ports:
+      - "8000:8000"
+    networks:
+      - vieteduchain-network
+    depends_on:
+      - core
+
+  gui:
+    build:
+      context: ./gui
+      dockerfile: Dockerfile.gui
+    ports:
+      - "3000:3000"
+    networks:
+      - vieteduchain-network
+    depends_on:
+      - api
+
+networks:
+  vieteduchain-network:
+    driver: bridge
