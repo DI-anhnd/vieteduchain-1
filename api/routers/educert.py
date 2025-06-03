@@ -1,34 +1,29 @@
 from fastapi import APIRouter, HTTPException
-from pydantic import BaseModel
-from typing import List
+from models.schemas import EduCert
 from services.educert_service import EduCertService
 
 router = APIRouter()
+educert_service = EduCertService()
 
-class Credential(BaseModel):
-    id: str
-    issuer: str
-    subject: str
-    issuance_date: str
-    expiration_date: str
+@router.post("/edu-cert/issue")
+def issue_credential(cert: EduCert):
+    return educert_service.issue_certificate(cert)
 
-class RevocationRequest(BaseModel):
-    credential_id: str
+@router.post("/edu-cert/revoke")
+def revoke_credential(data: dict):
+    credential_id = data.get("credential_id")
+    if not credential_id:
+        raise HTTPException(status_code=400, detail="Missing credential_id")
+    return educert_service.revoke_certificate(credential_id)
 
-@router.post("/educert/issue", response_model=Credential)
-async def issue_credential(credential: Credential):
-    # Logic to issue a verifiable credential
-    return credential
+@router.get("/edu-cert/view/{credential_id}")
+def get_credential(credential_id: str):
+    return educert_service.get_certificate(credential_id)
 
-@router.post("/educert/revoke")
-async def revoke_credential(revocation_request: RevocationRequest):
-    # Logic to revoke a verifiable credential
-    return {"message": "Credential revoked successfully"}
+@router.post("/edu-cert/verify")
+def verify_credential(cert: EduCert):
+    return educert_service.verify_certificate(cert)
 
-@router.get("/educert/{credential_id}", response_model=Credential)
-async def get_credential(credential_id: str):
-    # Logic to retrieve a verifiable credential
-    credential = None  # Replace with actual retrieval logic
-    if credential is None:
-        raise HTTPException(status_code=404, detail="Credential not found")
-    return credential
+@router.get("/edu-cert/list")
+def list_credentials():
+    return educert_service.list_certificates()

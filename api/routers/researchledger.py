@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, UploadFile, File, Form
 from pydantic import BaseModel
 from typing import List
 from services.researchledger_service import ResearchLedgerService
@@ -35,3 +35,16 @@ async def report_plagiarism(data: PlagiarismBounty):
 async def get_hash(hash: str):
     # Logic to retrieve the hash from the ResearchLedger
     raise HTTPException(status_code=404, detail="Hash not found")
+
+@router.post("/researchledger/register-hash")
+async def register_hash(file: UploadFile = File(...)):
+    file_bytes = await file.read()
+    return ResearchLedgerService.register_hash(file_bytes)
+
+@router.post("/researchledger/mint-doi-nft")
+async def mint_doi_nft(doi: str = Form(...), cid: str = Form(...), authors: List[str] = Form(...)):
+    return ResearchLedgerService.mint_doi_nft(doi, cid, authors)
+
+@router.post("/researchledger/plagiarism-bounty")
+async def submit_plagiarism_bounty(hash1: str = Form(...), hash2: str = Form(...), submitter: str = Form(...)):
+    return ResearchLedgerService.submit_plagiarism_bounty(hash1, hash2, submitter)

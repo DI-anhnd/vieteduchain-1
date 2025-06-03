@@ -2,13 +2,15 @@ from pydantic import BaseModel
 from typing import List, Optional
 
 class EduCert(BaseModel):
-    id: str
+    id: str = ""
     student_id: str
     institution_id: str
     credential_type: str
     issued_date: str
     expiration_date: Optional[str] = None
     revoked: bool = False
+    signature: Optional[str] = None
+    issued_at: Optional[int] = None
 
 class EduID(BaseModel):
     id: str
@@ -38,3 +40,28 @@ class EduAdmission(BaseModel):
     score: float
     admission_status: str
     timestamp: str
+
+class EduIDSchema(EduID):
+    pass
+
+class EduIDCreateSchema(BaseModel):
+    did: str
+    public_key: str
+    services: List[str]
+
+class Admission(BaseModel):
+    id: str
+    seat_nft: str
+    candidate_id: str
+    score: float
+    admission_status: str
+    timestamp: str
+
+class SeatNFT(BaseModel):
+    id: str
+    owner: str
+    metadata: str
+
+class Score(BaseModel):
+    candidate_id: str
+    value: float

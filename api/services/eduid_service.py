@@ -25,3 +25,7 @@ async def read_eduid(eduid_id: str):
 @router.get("/eduid/", response_model=List[EduIDSchema])
 async def list_eduid():
     return list(eduid_storage.values())
+
+# Dummy class to fix import error for legacy code
+class EduIDService:
+    pass
