@@ -1,36 +1,70 @@
 version: '3.8'
 
 services:
-  core:
-    build:
-      context: ./core
-      dockerfile: Dockerfile.core
+  node0:
+    image: cosmwasm/wasmd:v0.45.0
+    container_name: node0
+    environment:
+      - MONIKER=node0
+    volumes:
+      - ./data/node0:/root/.wasmd
     ports:
-      - "8080:8080"
+      - "26656:26656"   # P2P
+      - "26657:26657"   # RPC
+      - "1317:1317"     # REST API
+    networks:
+      - vieteduchain-network
+    command: >
+      sh -c "wasmd start"
+
+  node1:
+    image: cosmwasm/wasmd:v0.45.0
+    container_name: node1
+    environment:
+      - MONIKER=node1
+    volumes:
+      - ./data/node1:/root/.wasmd
+    ports:
+      - "26666:26656"
+      - "26667:26657"
+      - "1318:1317"
+    networks:
+      - vieteduchain-network
+    command: >
+      sh -c "wasmd start"
+
+  relayer:
+    image: ghcr.io/cosmos/relayer:latest
+    container_name: relayer
+    depends_on:
+      - node0
+      - node1
+    volumes:
+      - ./data/relayer:/root/.relayer
+    networks:
+      - vieteduchain-network
+    command: >
+      sh -c "rly start"
+
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    volumes:
+      - ./docker/prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
     networks:
       - vieteduchain-network
 
-  api:
-    build:
-      context: ./api
-      dockerfile: Dockerfile.api
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
     ports:
-      - "8000:8000"
+      - "3001:3000"
+    depends_on:
+      - prometheus
     networks:
       - vieteduchain-network
-    depends_on:
-      - core
-
-  gui:
-    build:
-      context: ./gui
-      dockerfile: Dockerfile.gui
-    ports:
-      - "3000:3000"
-    networks:
-      - vieteduchain-network
-    depends_on:
-      - api
 
 networks:
   vieteduchain-network:
